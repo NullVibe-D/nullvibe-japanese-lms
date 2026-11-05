@@ -1,0 +1,35 @@
+{
+  "results": [
+    {
+      "width": 360,
+      "screen": "lesson",
+      "violations": []
+    },
+    {
+      "width": 360,
+      "screen": "mentor",
+      "violations": []
+    },
+    {
+      "width": 768,
+      "screen": "lesson",
+      "violations": []
+    },
+    {
+      "width": 768,
+      "screen": "mentor",
+      "violations": []
+    },
+    {
+      "width": 1440,
+      "screen": "lesson",
+      "violations": []
+    },
+    {
+      "width": 1440,
+      "screen": "mentor",
+      "violations": []
+    }
+  ],
+  "errors": []
+}
