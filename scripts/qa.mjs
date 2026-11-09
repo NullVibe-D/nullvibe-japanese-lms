@@ -169,6 +169,10 @@ for (const [width, height] of [
   assert.equal(await page.getByRole("button", { name: "Course studio preview", exact: true }).count(), 1);
   await page.getByRole("button", { name: "Course studio preview", exact: true }).click();
   assert.equal(new URL(page.url()).pathname, "/studio");
+  const backBox = await page.getByRole("button", { name: "Back to courses", exact: true }).boundingBox();
+  const adminLabelBox = await page.locator(".studio-page > .eyebrow").boundingBox();
+  assert(backBox && adminLabelBox && adminLabelBox.y >= backBox.y + backBox.height,
+    "Studio admin preview label must appear below the return link");
   await page.screenshot({
     path: "qa/studio-" + width + ".png",
     fullPage: true,
@@ -211,3 +215,9 @@ await writeFile(
 );
 console.log(JSON.stringify({ results, errors }, null, 2));
 assert.equal(errors.length, 0, "Browser runtime errors");
+const serious = results.flatMap((result) =>
+  result.violations
+    .filter((issue) => ["critical", "serious"].includes(issue.impact))
+    .map((issue) => ({ width: result.width, screen: result.screen, ...issue })),
+);
+assert.deepEqual(serious, [], "Serious or critical automated accessibility violations");
