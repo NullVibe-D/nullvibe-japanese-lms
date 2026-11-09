@@ -28,8 +28,19 @@ for (const [width, height] of [
   await page.goto(base, { waitUntil: "networkidle" });
   assert.equal(new URL(page.url()).pathname, "/");
   assert.equal(await page.locator(".course-card").count(), 2);
+  assert.match(await page.title(), /Japanese Courses/);
+  await page.getByRole("textbox", { name: "Search courses" }).fill("missing-course");
+  assert.equal(await page.locator(".course-card").count(), 0);
+  await page.getByRole("button", { name: "Show all courses" }).click();
+  assert.equal(await page.locator(".course-card").count(), 2, "empty-search reset restores catalog");
   await page.getByRole("button", { name: "Explore lessons", exact: true }).first().click();
   assert.equal(new URL(page.url()).pathname, "/learn/n5/1", "new students must start at lesson one");
+  assert.match(await page.title(), /JLPT N5.*Lesson 1/);
+  assert.equal(
+    await page.locator("#main-content h1").evaluate((element) => getComputedStyle(element).outlineStyle),
+    "none",
+    "programmatic heading focus must not render a blue box",
+  );
   await page.goto(base + "/learn/n5/3", { waitUntil: "networkidle" });
   assert.equal(new URL(page.url()).pathname, "/learn/n5/3", "deep links must resolve");
   await page.screenshot({
@@ -66,6 +77,7 @@ for (const [width, height] of [
       .isDisabled(),
   );
   await page.getByLabel("Language", { exact: true }).selectOption("si");
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: "qa/sinhala-" + width + ".png",
     fullPage: true,
@@ -77,11 +89,28 @@ for (const [width, height] of [
     ),
     "Sinhala overflow " + width,
   );
+  await page.getByLabel("Language", { exact: true }).selectOption("ja");
+  assert.equal(await page.locator("html").getAttribute("lang"), "ja");
+  assert(
+    await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    "Japanese overflow " + width,
+  );
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({
+    path: "qa/japanese-" + width + ".png",
+    fullPage: true,
+  });
   await page.getByLabel("Language", { exact: true }).selectOption("en");
   await page
     .getByRole("button", { name: "Quick practice", exact: true })
     .click();
   assert.equal(new URL(page.url()).pathname, "/practice/n5");
+  await page.screenshot({
+    path: "qa/practice-" + width + ".png",
+    fullPage: true,
+  });
+  const practiceScan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+  results.push({ width, screen: "practice", violations: practiceScan.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.map((n) => n.target) })) });
   for (let i = 0; i < 5; i++) {
     await page.getByRole("radio").nth([1, 2, 0, 1, 2][i]).check();
     await page
@@ -95,6 +124,12 @@ for (const [width, height] of [
       .click();
   }
   assert.match(await page.locator(".nv-score").innerText(), /5 \/ 5/);
+  await page.screenshot({
+    path: "qa/results-" + width + ".png",
+    fullPage: true,
+  });
+  const resultScan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+  results.push({ width, screen: "results", violations: resultScan.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.map((n) => n.target) })) });
   await page.getByRole("button", { name: "Continue learning", exact: true }).click();
   assert.equal(new URL(page.url()).pathname, "/learn/n5/3", "continue must resume the previous lesson");
   await page.goBack({ waitUntil: "networkidle" });
@@ -117,6 +152,12 @@ for (const [width, height] of [
     .getByRole("button", { name: "Course access", exact: true })
     .click();
   assert(await page.getByRole("dialog").isVisible());
+  await page.screenshot({
+    path: "qa/access-" + width + ".png",
+    fullPage: true,
+  });
+  const accessScan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+  results.push({ width, screen: "course-access", violations: accessScan.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.map((n) => n.target) })) });
   await page.keyboard.press("Escape");
   assert.equal(await page.getByRole("dialog").count(), 0);
   await page
@@ -124,7 +165,14 @@ for (const [width, height] of [
     .click();
   assert.equal(new URL(page.url()).pathname, "/learn/n4/1");
   assert.match(await page.locator("h1").innerText(), /たこと/);
-  await page.getByLabel("Course studio", { exact: true }).click();
+  await page.getByLabel("NullVibe home").click();
+  assert.equal(await page.getByRole("button", { name: "Course studio preview", exact: true }).count(), 1);
+  await page.getByRole("button", { name: "Course studio preview", exact: true }).click();
+  assert.equal(new URL(page.url()).pathname, "/studio");
+  await page.screenshot({
+    path: "qa/studio-" + width + ".png",
+    fullPage: true,
+  });
   const studioScan = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
   results.push({ width, screen: "studio", violations: studioScan.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.map((n) => n.target) })) });
   await page.getByLabel("Price in LKR", { exact: true }).fill("12000");
@@ -135,6 +183,10 @@ for (const [width, height] of [
     .getByRole("button", { name: "Explain は and です", exact: true })
     .click();
   assert.match(await page.locator(".message-list").innerText(), /topic/);
+  await page.screenshot({
+    path: "qa/mentor-" + width + ".png",
+    fullPage: true,
+  });
   const mentorScan = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
     .analyze();
@@ -148,6 +200,8 @@ for (const [width, height] of [
     })),
   });
   await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Back to courses", exact: true }).click();
+  assert.equal(new URL(page.url()).pathname, "/courses");
   await context.close();
 }
 await browser.close();
