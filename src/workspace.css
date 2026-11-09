@@ -353,7 +353,13 @@ progress::-webkit-progress-value {
   background: #edf6fc;
 }
 .studio-page .back-link {
+  display: flex;
+  width: fit-content;
   margin-bottom: 16px;
+}
+.studio-page > .eyebrow {
+  display: block;
+  margin-bottom: 8px;
 }
 .back-link .back-arrow {
   transform: rotate(180deg);
