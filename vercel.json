@@ -1,0 +1,24 @@
+{
+  "rewrites": [
+    {
+      "source": "/courses",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/courses/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/learn/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/practice/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/studio",
+      "destination": "/index.html"
+    }
+  ]
+}

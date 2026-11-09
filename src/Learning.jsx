@@ -513,16 +513,17 @@ export function Lesson({
   language = "en",
   courseId = "n5",
   completedIds = [],
+  lessonIndex = 0,
+  onSelectLesson,
   onComplete,
   onPractice,
 }) {
   const normalizedCourse = String(courseId).toLowerCase();
   const courseLessons = lessons[normalizedCourse] || lessons.n5;
-  const [active, setActive] = useState(normalizedCourse === "n5" ? 2 : 0);
+  const active = Number.isInteger(lessonIndex) && lessonIndex >= 0 && lessonIndex < courseLessons.length
+    ? lessonIndex
+    : 0;
   const titleRef = useRef(null);
-  useEffect(() => {
-    setActive(normalizedCourse === "n5" ? 2 : 0);
-  }, [normalizedCourse]);
   const lesson = courseLessons[active];
   const lessonId = courseId + "-" + active;
   const done = completedIds.includes(lessonId);
@@ -531,7 +532,8 @@ export function Lesson({
   ).length;
   const percentage = Math.round((completedCount / courseLessons.length) * 100);
   function selectLesson(index) {
-    setActive(index);
+    if (!Number.isInteger(index) || index < 0 || index >= courseLessons.length) return;
+    onSelectLesson(index);
     requestAnimationFrame(() =>
       titleRef.current?.focus({ preventScroll: true }),
     );

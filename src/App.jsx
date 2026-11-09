@@ -12,6 +12,7 @@ import { Lesson, Assessment } from "./Learning";
 import { Catalog, Studio, Mentor, AccessDialog } from "./Workspace";
 import "./workspace.css";
 import { sanitizeConfig, sanitizeProgress } from "./domain.mjs";
+import { parseRoute, lessonPath, practicePath } from "./routing.mjs";
 
 export function translate(language, english, sinhala, japanese) {
   return { en: english, si: sinhala, ja: japanese }[language] || english;
@@ -43,8 +44,19 @@ export function App() {
     ? savedLanguage
     : "en";
   const t = (en, si, ja) => translate(language, en, si, ja);
-  const [view, setView] = useState("lesson");
-  const [courseId, setCourseId] = useState("N5");
+  const [routePath, setRoutePath] = useState(() => window.location.pathname);
+  const route = parseRoute(routePath);
+  const view = route.view;
+  const [lastCourse, setLastCourse] = useStored("nullvibe.currentCourse", "N5");
+  const [savedLastLesson, setLastLesson] = useStored("nullvibe.lastLesson.v1", {
+    N5: 0,
+    N4: 0,
+  });
+  const courseId = route.courseId || (lastCourse === "N4" ? "N4" : "N5");
+  function rememberedIndex(id) {
+    const index = savedLastLesson?.[id];
+    return Number.isInteger(index) && index >= 0 && index < 5 ? index : 0;
+  }
   const [savedCompleted, setCompleted] = useStored("nullvibe.progress", []);
   const completedIds = sanitizeProgress(savedCompleted);
   const [lastResult, setResult] = useStored("nullvibe.result", null);
@@ -69,15 +81,51 @@ export function App() {
   useEffect(() => {
     document.documentElement.lang = language;
   }, [language]);
-  function navigate(next) {
-    setView(next);
-    window.scrollTo({ top: 0, behavior: "instant" });
-    requestAnimationFrame(() => document.querySelector("main h1")?.focus());
+  useEffect(() => {
+    const onPopState = () => setRoutePath(window.location.pathname);
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() =>
+      document.querySelector("#main-content h1")?.focus({ preventScroll: true }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [routePath]);
+  useEffect(() => {
+    if (route.view !== "lesson") return;
+    setLastCourse(route.courseId);
+    setLastLesson((previous) =>
+      previous?.[route.courseId] === route.lessonIndex
+        ? previous
+        : { ...(previous || {}), [route.courseId]: route.lessonIndex },
+    );
+  }, [routePath]);
+
+  function navigate(next, { preserveScroll = false } = {}) {
+    let path = next;
+    if (!path.startsWith("/")) {
+      if (next === "courses") path = "/courses";
+      else if (next === "studio") path = "/studio";
+      else if (next === "lesson") path = lessonPath(courseId, rememberedIndex(courseId));
+      else if (next === "practice") path = practicePath(courseId);
+      else path = "/courses";
+    }
+    if (window.location.pathname !== path) {
+      window.history.pushState(null, "", path);
+      setRoutePath(path);
+    }
+    if (!preserveScroll) window.scrollTo({ top: 0, behavior: "instant" });
+
   }
   function startCourse(id) {
-    setCourseId(id);
+    setLastCourse(id);
     setAccessCourse(null);
-    navigate("lesson");
+    navigate(lessonPath(id, rememberedIndex(id)));
+  }
+  function selectLesson(index) {
+    setLastLesson((previous) => ({ ...(previous || {}), [courseId]: index }));
+    navigate(lessonPath(courseId, index), { preserveScroll: true });
   }
   function markComplete(id) {
     setCompleted((previous) => [
@@ -176,6 +224,8 @@ export function App() {
             language={language}
             courseId={courseId}
             completedIds={completedIds}
+            lessonIndex={route.lessonIndex}
+            onSelectLesson={selectLesson}
             onComplete={markComplete}
             onPractice={() => navigate("practice")}
           />
@@ -185,13 +235,17 @@ export function App() {
             key={courseId}
             language={language}
             courseId={courseId}
-            onBack={() => navigate("lesson")}
+            onBack={() => navigate(lessonPath(courseId, rememberedIndex(courseId)))}
             onResult={setResult}
           />
         )}
         {view === "courses" && (
           <Catalog
             language={language}
+            filter={route.filter}
+            onFilterChange={(filter) =>
+              navigate(filter === "all" ? "/courses" : "/courses/" + filter.toLowerCase())
+            }
             config={safeConfig}
             completedIds={completedIds}
             lastResult={lastResult}
@@ -201,6 +255,22 @@ export function App() {
         )}
         {view === "studio" && (
           <Studio language={language} config={safeConfig} onSave={setConfig} />
+        )}
+        {view === "not-found" && (
+          <main id="main-content" className="task-view">
+            <h1 tabIndex={-1}>{t("Page not found", "පිටුව හමු නොවීය", "ページが見つかりません")}</h1>
+            <p className="task-intro">
+              {t(
+                "This page is unavailable. Return to the course catalog to keep learning.",
+                "මෙම පිටුව ලබාගත නොහැක. පාඩම් දිගටම කරගෙන යාමට පාඨමාලා වෙත යන්න.",
+                "このページはありません。コース一覧に戻って学習を続けましょう。",
+              )}
+            </p>
+            <button className="primary-button" onClick={() => navigate("courses")}>
+              {t("Browse courses", "පාඨමාලා බලන්න", "コース一覧へ")}
+              <ArrowRight />
+            </button>
+          </main>
         )}
       </div>
       <nav
