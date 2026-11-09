@@ -51,6 +51,8 @@ function Dialog({ title, onClose, children, wide = false }) {
 
 export function Catalog({
   language,
+  filter = "all",
+  onFilterChange,
   config,
   completedIds,
   lastResult,
@@ -58,7 +60,6 @@ export function Catalog({
   onAccess,
 }) {
   const t = translator(language);
-  const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const courses = [
     {
@@ -130,7 +131,7 @@ export function Catalog({
               key={value}
               aria-pressed={filter === value}
               className={filter === value ? "selected" : ""}
-              onClick={() => setFilter(value)}
+              onClick={() => onFilterChange(value)}
             >
               {value === "all"
                 ? t("All courses", "සියලු පාඨමාලා", "すべて")

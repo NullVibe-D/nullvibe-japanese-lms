@@ -1,0 +1,52 @@
+name: LMS routing and learning QA
+
+on:
+  push:
+    branches:
+      - fix/phase1-routing-learning-flow
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build production assets
+        run: npm run build
+      - name: Run unit tests
+        run: npm test
+      - name: Run worker packaging tests
+        run: npm run test:sites
+      - name: Install Chromium for responsive browser QA
+        run: npx playwright install --with-deps chromium
+      - name: Start local preview
+        run: npm run preview -- --host 127.0.0.1 --port 4173 --strictPort > /tmp/lms-preview.log 2>&1 &
+      - name: Browser flow, routing, localization and accessibility QA
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:4173; then break; fi
+            sleep 1
+          done
+          npm run test:qa
+      - name: Upload browser QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lms-qa-evidence
+          path: |
+            qa/*.png
+            qa/results.json
+          if-no-files-found: ignore
