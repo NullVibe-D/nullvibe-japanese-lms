@@ -7,6 +7,7 @@ import {
   LockKey,
   MagnifyingGlass,
   PaperPlaneTilt,
+  SlidersHorizontal,
   Sparkle,
   X,
 } from "@phosphor-icons/react";
@@ -58,6 +59,7 @@ export function Catalog({
   lastResult,
   onOpen,
   onAccess,
+  onStudio,
 }) {
   const t = translator(language);
   const [query, setQuery] = useState("");
@@ -175,7 +177,7 @@ export function Catalog({
                     "日本語 • シンハラ語解説",
                   )}
                 </span>
-                <h2>{course.title}</h2>
+                <h2><span className="sr-only">JLPT {course.id}: </span>{course.title}</h2>
                 <p>{course.subtitle}</p>
                 <div className="course-meta">
                   <span>
@@ -211,7 +213,9 @@ export function Catalog({
                     className="primary-button"
                     onClick={() => onOpen(course.id)}
                   >
-                    {t("Explore lessons", "පාඩම් බලන්න", "レッスンを見る")}
+                    {count > 0
+                      ? t("Continue learning", "ඉගෙනීම ඉදිරියට", "学習を続ける")
+                      : t("Explore lessons", "පාඩම් බලන්න", "レッスンを見る")}
                     <ArrowRight />
                   </button>
                   <button
@@ -227,13 +231,21 @@ export function Catalog({
         })}
       </div>
       {visible.length === 0 && (
-        <p className="empty-state" role="status">
-          {t(
-            "No courses match. Try N5 or N4.",
-            "ගැළපෙන පාඨමාලා නැත. N5 හෝ N4 සොයන්න.",
-            "該当するコースがありません。N5、N4をお試しください。",
-          )}
-        </p>
+        <div className="empty-state">
+          <p role="status">
+            {t(
+              "No courses match. Try N5 or N4.",
+              "ගැළපෙන පාඨමාලා නැත. N5 හෝ N4 සොයන්න.",
+              "該当するコースがありません。N5、N4をお試しください。",
+            )}
+          </p>
+          <button className="quiet-button" onClick={() => {
+            setQuery("");
+            onFilterChange("all");
+          }}>
+            {t("Show all courses", "සියලු පාඨමාලා පෙන්වන්න", "すべてのコースを表示")}
+          </button>
+        </div>
       )}
       {lastResult && (
         <p className="last-result">
@@ -249,6 +261,24 @@ export function Catalog({
           "体験用コンテンツです。正式な教材と受講情報は講師が確認します。",
         )}
       </p>
+      <div className="catalog-preview-tools">
+        <span>
+          {t(
+            "For instructors · local demo settings only",
+            "ගුරුවරුන් සඳහා · මෙම උපාංගයේ ආදර්ශ සැකසුම් පමණි",
+            "講師向け · この端末のみのデモ設定",
+          )}
+        </span>
+        <button className="preview-tools-link" onClick={onStudio} aria-label={t(
+          "Course studio preview",
+          "පාඨමාලා සැකසුම් පෙරදසුන",
+          "コース管理プレビュー",
+        )}>
+          <SlidersHorizontal size={17} aria-hidden="true" />
+          {t("Course studio preview", "පාඨමාලා සැකසුම් පෙරදසුන", "コース管理プレビュー")}
+          <ArrowRight size={16} aria-hidden="true" />
+        </button>
+      </div>
     </main>
   );
 }
@@ -310,7 +340,7 @@ export function AccessDialog({
   );
 }
 
-export function Studio({ language, config, onSave }) {
+export function Studio({ language, config, onSave, onBack }) {
   const t = translator(language);
   const [courseId, setCourseId] = useState("N5");
   const [draft, setDraft] = useState(config);
@@ -347,6 +377,10 @@ export function Studio({ language, config, onSave }) {
   }
   return (
     <main id="main-content" className="task-view studio-page">
+      <button type="button" className="back-link" onClick={onBack}>
+        <ArrowRight className="back-arrow" aria-hidden="true" />
+        {t("Back to courses", "පාඨමාලා වෙත ආපසු", "コース一覧に戻る")}
+      </button>
       <span className="eyebrow">
         {t("ADMIN PREVIEW", "පරිපාලක පෙරදසුන", "管理画面プレビュー")}
       </span>

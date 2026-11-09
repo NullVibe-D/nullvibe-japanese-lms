@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
   SquaresFour,
   Sparkle,
-  SlidersHorizontal,
   ArrowRight,
   Globe,
   GraduationCap,
@@ -45,6 +44,7 @@ export function App() {
     : "en";
   const t = (en, si, ja) => translate(language, en, si, ja);
   const [routePath, setRoutePath] = useState(() => window.location.pathname);
+  const isInitialRoute = useRef(true);
   const route = parseRoute(routePath);
   const view = route.view;
   const [lastCourse, setLastCourse] = useStored("nullvibe.currentCourse", "N5");
@@ -87,11 +87,25 @@ export function App() {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
   useEffect(() => {
+    if (isInitialRoute.current) {
+      isInitialRoute.current = false;
+      return;
+    }
     const frame = requestAnimationFrame(() =>
       document.querySelector("#main-content h1")?.focus({ preventScroll: true }),
     );
     return () => cancelAnimationFrame(frame);
   }, [routePath]);
+  useEffect(() => {
+    const title = {
+      courses: t("Japanese Courses", "ජපන් පාඨමාලා", "日本語コース"),
+      lesson: "JLPT " + courseId + " · " + t("Lesson", "පාඩම", "レッスン") + " " + (route.lessonIndex + 1),
+      practice: "JLPT " + courseId + " · " + t("Practice", "පුහුණුව", "練習"),
+      studio: t("Course Studio Preview", "පාඨමාලා සැකසුම් පෙරදසුන", "管理画面プレビュー"),
+      "not-found": t("Page not found", "පිටුව හමු නොවීය", "ページが見つかりません"),
+    }[view] || "Japanese Learning";
+    document.title = title + " | NullVibe";
+  }, [routePath, language]);
   useEffect(() => {
     if (route.view !== "lesson") return;
     setLastCourse(route.courseId);
@@ -191,13 +205,6 @@ export function App() {
             </select>
           </label>
           <button
-            className="icon-button studio-link"
-            aria-label={t("Course studio", "පාඨමාලා සැකසුම්", "コース設定")}
-            onClick={() => navigate("studio")}
-          >
-            <SlidersHorizontal />
-          </button>
-          <button
             className="mentor-trigger"
             aria-label={t("Mentor", "උපදේශක", "メンター")}
             onClick={() => setMentorOpen(true)}
@@ -251,10 +258,16 @@ export function App() {
             lastResult={lastResult}
             onOpen={startCourse}
             onAccess={setAccessCourse}
+            onStudio={() => navigate("studio")}
           />
         )}
         {view === "studio" && (
-          <Studio language={language} config={safeConfig} onSave={setConfig} />
+          <Studio
+            language={language}
+            config={safeConfig}
+            onSave={setConfig}
+            onBack={() => navigate("courses")}
+          />
         )}
         {view === "not-found" && (
           <main id="main-content" className="task-view">

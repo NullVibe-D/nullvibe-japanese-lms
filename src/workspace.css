@@ -121,12 +121,12 @@
   grid-column: 1 / -1;
   width: min(1120px, 100%);
   margin: 0 auto;
-  padding: 62px 32px 70px;
+  padding: 52px 32px 70px;
 }
 .eyebrow {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.13em;
+  letter-spacing: 0.11em;
   color: #376580;
 }
 .catalog-intro h1 {
@@ -165,7 +165,7 @@
   border-radius: 8px;
   background: transparent;
   color: #516f85;
-  font-size: 12px;
+  font-size: 13px;
   white-space: nowrap;
 }
 .filter-group button.selected {
@@ -187,7 +187,7 @@
   border: 0;
   background: transparent;
   color: var(--ink);
-  font-size: 12px;
+  font-size: 13px;
 }
 .search-field input::placeholder {
   color: #63798d;
@@ -236,7 +236,7 @@
   position: absolute;
   right: 25px;
   top: 18px;
-  font-size: 10px;
+  font-size: 12px;
   color: #396582;
 }
 .course-body {
@@ -259,7 +259,7 @@
   flex-wrap: wrap;
   gap: 8px 16px;
   color: #506c83;
-  font-size: 11px;
+  font-size: 12px;
   margin: 22px 0;
 }
 .course-meta span {
@@ -272,7 +272,7 @@
   align-items: center;
   gap: 12px;
   color: #506c83;
-  font-size: 11px;
+  font-size: 12px;
 }
 progress {
   accent-color: #4263b4;
@@ -301,20 +301,68 @@ progress::-webkit-progress-value {
   background: transparent;
   color: #246389;
   padding: 12px 4px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 .empty-state {
-  padding: 50px 20px;
+  padding: 32px 20px;
   text-align: center;
   background: #edf6fc;
   border-radius: 12px;
+}
+.empty-state .quiet-button {
+  margin-top: 8px;
 }
 .catalog-footnote {
   margin-top: 26px;
   font-size: 12px;
   color: #597287;
   line-height: 1.6;
+}
+.catalog-preview-tools {
+  margin-top: 18px;
+  padding-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+}
+.catalog-preview-tools > span {
+  color: #536d82;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.preview-tools-link {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  color: #235f89;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+.preview-tools-link:hover {
+  background: #edf6fc;
+}
+.studio-page .back-link {
+  display: flex;
+  width: fit-content;
+  margin-bottom: 16px;
+}
+.studio-page > .eyebrow {
+  display: block;
+  margin-bottom: 8px;
+}
+.back-link .back-arrow {
+  transform: rotate(180deg);
 }
 .last-result {
   display: flex;
@@ -379,7 +427,7 @@ progress::-webkit-progress-value {
   padding: 14px 18px;
   border-radius: 8px;
   color: #46677e;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.65;
 }
 .admin-card {
@@ -415,7 +463,7 @@ progress::-webkit-progress-value {
 .save-message {
   margin: 0;
   color: #246951;
-  font-size: 12px;
+  font-size: 13px;
 }
 .mentor-dialog {
   height: min(760px, calc(100dvh - 32px));
@@ -437,7 +485,7 @@ progress::-webkit-progress-value {
 }
 .mentor-intro small {
   color: #526f85;
-  font-size: 11px;
+  font-size: 12px;
 }
 .mentor-prompts {
   padding: 0 22px;
@@ -456,7 +504,7 @@ progress::-webkit-progress-value {
   background: #f6fbff;
   color: #2c5e81;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
 }
 .mentor-dialog .message-list {
   min-height: 90px;
@@ -522,9 +570,6 @@ progress::-webkit-progress-value {
   .locale-control select {
     max-width: 90px;
   }
-  .header-actions > .icon-button.studio-link {
-    display: grid;
-  }
   .mobile-bottom-nav {
     background: #fff;
   }
@@ -537,7 +582,7 @@ progress::-webkit-progress-value {
     font-size: 8px;
   }
   .catalog-page {
-    padding: 35px 18px 100px;
+    padding: 28px 18px 100px;
   }
   .catalog-intro h1 {
     font-size: 38px;
@@ -555,6 +600,12 @@ progress::-webkit-progress-value {
   }
   .course-body {
     padding: 22px;
+  }
+  .catalog-preview-tools {
+    align-items: stretch;
+  }
+  .preview-tools-link {
+    width: 100%;
   }
   .course-buttons {
     align-items: stretch;

@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - fix/phase1-routing-learning-flow
+      - fix/phase2-ux-polish
   pull_request:
     branches:
       - main
+      - fix/phase1-routing-learning-flow
 
 permissions:
   contents: read
